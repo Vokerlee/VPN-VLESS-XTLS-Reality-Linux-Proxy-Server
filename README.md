@@ -1,11 +1,25 @@
-# Full Guide: VLESS + XTLS-Reality VPN Setup on Ubuntu 24
+# VPN + Proxy in Russia
 
-This guide consists of **two independent parts**:
+This guide explains how to set up a self-hosted VPN using the **VLESS + XTLS-Reality** protocol — the most censorship-resistant tunneling protocol available today. Unlike WireGuard or OpenVPN, it disguises your traffic as ordinary HTTPS and cannot be reliably detected or blocked by deep packet inspection (DPI).
 
-- **PART A — VPN Server:** How to set up your own VLESS + XTLS-Reality VPN server using the 3X-UI panel. This is the server that encrypts and tunnels your traffic.
-- **PART B — Connecting to the VPN:** How to connect to your VPN server from various devices. This includes two approaches:
-  - **Direct connection** using GUI client apps (Invisible Man XRay, NekoBox, FoXray) — the simplest method for personal devices
-  - **System-wide proxy on a Linux server** using Xray core — for routing all traffic from another server through the VPN
+The guide covers the full picture: from renting and configuring a VPS abroad, to connecting your personal devices or routing an entire Linux server through the VPN. It also describes a two-server setup suited for users in countries with internet restrictions (e.g., Russia), where a local proxy server forwards traffic to a VPN server abroad.
+
+**Who this guide is for:**
+- You want to bypass internet censorship or geo-restrictions
+- You want full control over your VPN — no third-party services, no shared infrastructure
+- You need a personal device (phone, PC) or an entire server to go through the VPN
+- You are in Russia or a similarly restricted region and need a reliable, hard-to-block solution
+
+**What you will need:**
+- A VPS in an unrestricted country (Europe, USA, etc.) for the VPN server — see [VPS Server Requirements](#vps-server-requirements) for provider recommendations
+- Optionally, a second VPS close to your location (e.g., Moscow) if you want a local proxy entry point
+
+The guide consists of **two independent parts**:
+
+- **PART A — VPN Server:** Set up a VLESS + XTLS-Reality server using the 3X-UI web panel on a remote VPS.
+- **PART B — Connecting to the VPN:** Connect to your VPN server. Two approaches are covered:
+  - **Direct connection** using GUI client apps (Windows, macOS, iOS, Android) — simplest for personal devices
+  - **System-wide proxy on a Linux server** using Xray core — routes all traffic from a server through the VPN
 
 You can follow Part A alone if you just need a VPN server, or skip to Part B if someone else already set up the server for you.
 
