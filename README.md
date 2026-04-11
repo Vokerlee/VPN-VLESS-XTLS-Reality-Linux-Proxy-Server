@@ -44,13 +44,19 @@ This guide explains how to set up a self-hosted VPN using the **VLESS + XTLS-Rea
 
 **Part 3 — Routing a Linux Server Through the VPN**
 
+*Section A — Connect This Machine to the VPN*
+
 10. [Install Xray Core](#install-xray-core)
 11. [Write the Configuration File](#write-the-configuration-file)
 12. [Start Xray and Verify](#start-xray-and-verify)
 13. [Route All Traffic Through the Proxy](#route-all-traffic-through-the-proxy)
 14. [What Persists After Reboot](#what-persists-after-reboot)
-15. [Share the Proxy with Other Devices](#share-the-proxy-with-other-devices) *(optional)*
-16. [One-Command Setup Script](#one-command-setup-script)
+
+*Section B — Use This Machine as a Proxy for Other Devices*
+
+15. [Allow Connections from Outside](#allow-connections-from-outside)
+16. [Open the Firewall Port](#open-the-firewall-port)
+17. [Test from Another Device](#test-from-another-device)
 
 ---
 
@@ -384,6 +390,8 @@ Use a GUI app to connect directly to your VLESS + XTLS-Reality server. No separa
 
 You need the connection URL (or individual values: server IP, UUID, public key, short ID) from Part 1.
 
+> Once connected, no further configuration is required — your VPN is fully set up and ready to use.
+
 ---
 
 ## Windows — Invisible Man XRay
@@ -433,9 +441,18 @@ You need the connection URL (or individual values: server IP, UUID, public key, 
 
 # Part 3 — Routing a Linux Server Through the VPN
 
-This part covers installing Xray core on an Ubuntu server, creating an HTTP proxy that tunnels traffic through your VLESS VPN server, and routing all system traffic through it.
+This part covers two independent scenarios — you can follow one or both depending on your needs:
+
+- **Section A** — Install Xray on a Linux machine and route all of its traffic through the VPN. Useful when you need a server or desktop to appear behind the VPN.
+- **Section B** — Expose the local HTTP proxy to the network so other devices (phones, PCs) can connect through this machine. Useful when you want a local entry point instead of connecting each device directly to the VPN server.
 
 You need the connection details (server IP, UUID, public key, short ID) from Part 1.
+
+---
+
+## Section A — Connect This Machine to the VPN
+
+Install Xray core, configure it as a local HTTP proxy that tunnels all traffic through your VLESS server, then point the OS at that proxy.
 
 ---
 
@@ -608,9 +625,9 @@ Everything above survives reboots automatically:
 
 ---
 
-## Share the Proxy with Other Devices
+## Section B — Use This Machine as a Proxy for Other Devices
 
-> **Optional.** By default, Xray listens on `127.0.0.1:10801` (local only). Follow this section if you want other machines (e.g., your home PC or phones) to connect through this server's proxy. This is used in Setup 3 from Part 1.
+By default, Xray listens on `127.0.0.1:10801` (local only). This section shows how to expose that proxy to the network so other devices — phones, PCs, or other servers — can route their traffic through this machine and out through the VPN. This corresponds to Setup 3 from Part 1.
 
 ### Allow Connections from Outside
 
@@ -674,120 +691,3 @@ curl -x http://YOUR_CLIENT_SERVER_IP:10801 https://ifconfig.me
 ```
 
 This should return the VPN server's IP.
-
----
-
-## One-Command Setup Script
-
-Copy and customize this script for fast deployment on a fresh Ubuntu 24 server:
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-# ═══════════════════════════════════════════════════════
-# CONFIGURE THESE VALUES
-# ═══════════════════════════════════════════════════════
-VPN_SERVER_IP="YOUR_VPN_SERVER_IP"
-UUID="YOUR_UUID"
-PUBLIC_KEY="YOUR_PUBLIC_KEY"
-SHORT_ID="YOUR_SHORT_ID"
-# ═══════════════════════════════════════════════════════
-
-# 1. Install Xray
-bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
-
-# 2. Write config
-cat > /usr/local/etc/xray/config.json << EOF
-{
-  "log": { "loglevel": "warning" },
-  "inbounds": [
-    {
-      "port": 10801,
-      "listen": "127.0.0.1",
-      "protocol": "http",
-      "settings": { "udp": true, "allowTransparent": false }
-    }
-  ],
-  "outbounds": [
-    {
-      "protocol": "vless",
-      "settings": {
-        "vnext": [{
-          "address": "${VPN_SERVER_IP}",
-          "port": 443,
-          "users": [{
-            "id": "${UUID}",
-            "alterId": 0,
-            "encryption": "none",
-            "flow": "xtls-rprx-vision"
-          }]
-        }],
-        "userLevel": 0
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "realitySettings": {
-          "show": false,
-          "fingerprint": "chrome",
-          "serverName": "www.google.com",
-          "publicKey": "${PUBLIC_KEY}",
-          "shortId": "${SHORT_ID}",
-          "spiderX": "/"
-        }
-      }
-    }
-  ]
-}
-EOF
-
-# 3. Start Xray
-systemctl daemon-reload
-systemctl enable xray
-systemctl start xray
-sleep 2
-systemctl status xray --no-pager
-
-# 4. System-wide proxy (login shells)
-cat > /etc/profile.d/proxy.sh << 'PROXYEOF'
-export http_proxy="http://127.0.0.1:10801"
-export https_proxy="http://127.0.0.1:10801"
-export HTTP_PROXY="http://127.0.0.1:10801"
-export HTTPS_PROXY="http://127.0.0.1:10801"
-export no_proxy="localhost,127.0.0.1,::1"
-export NO_PROXY="localhost,127.0.0.1,::1"
-PROXYEOF
-
-# 5. APT proxy
-cat > /etc/apt/apt.conf.d/95proxy << 'APTEOF'
-Acquire::http::Proxy "http://127.0.0.1:10801";
-Acquire::https::Proxy "http://127.0.0.1:10801";
-APTEOF
-
-# 6. Systemd services proxy
-mkdir -p /etc/systemd/system.conf.d
-cat > /etc/systemd/system.conf.d/proxy.conf << 'SYSEOF'
-[Manager]
-DefaultEnvironment="http_proxy=http://127.0.0.1:10801" "https_proxy=http://127.0.0.1:10801" "HTTP_PROXY=http://127.0.0.1:10801" "HTTPS_PROXY=http://127.0.0.1:10801" "no_proxy=localhost,127.0.0.1,::1"
-SYSEOF
-systemctl daemon-reexec
-
-# 7. Load proxy in current session
-source /etc/profile.d/proxy.sh
-
-# 8. Test
-echo "---"
-echo "Exit IP (should be VPN server):"
-curl -x http://127.0.0.1:10801 -s https://ifconfig.me
-echo ""
-echo "---"
-echo "Setup complete! Log out and back in for proxy to take effect in new shells."
-```
-
-Save as `setup-xray-vpn.sh`, edit the 4 variables at the top, and run with:
-
-```bash
-chmod +x setup-xray-vpn.sh
-sudo ./setup-xray-vpn.sh
-```
