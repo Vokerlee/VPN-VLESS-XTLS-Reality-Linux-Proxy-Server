@@ -139,7 +139,7 @@ HostVDS server (Europe / USA)
 
 ---
 
-**Setup 3 — Two-server setup with a Russian proxy (recommended for Russia)**
+**Setup 3 — Two-server setup with a Russian proxy**
 
 Use this when you are based in Russia and want all your devices to go through the VPN via a single local entry point.
 
@@ -208,13 +208,19 @@ bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.
 
 ### Set Credentials and Panel URL
 
-After installation completes, it will ask if you want to make modifications — answer **Y** (yes).
+After installation completes, it will ask if you want to customize the port — answer **Y** (yes).
 
-- **Username:** Choose any username you like
-- **Password:** Choose a strong password (mix of uppercase, lowercase, and numbers)
-- **Port:** Choose a port for the web panel (e.g., `5580`; use a high port up to 65535)
+![3X-UI installation — port customization prompt](images/3x-ui-installation.png)
 
-> **Important:** If you skip the modification step (answer **N**), 3X-UI generates **random** credentials (login, password) and a **random port** with a **random URL path**. In that case, the default `http://YOUR_SERVER_IP:PORT/panel/` will **NOT** work — the panel will be at a randomized path like `http://YOUR_SERVER_IP:RANDOM_PORT/RANDOM_PATH/`. The installer prints these values to the terminal — copy them immediately. You can always change the credentials, port, and URL path later from within the panel settings, or by running `x-ui` in the terminal to access the admin menu.
+- **Port:** Choose a port for the web panel (e.g., `14288`; use a high port up to 65535)
+
+The username and password are generated automatically. When installation finishes, it prints the panel URL and the generated credentials — copy them immediately.
+
+![3X-UI installation complete — credentials and panel URL](images/3x-ui-credentials.png)
+
+To change the username and password, log in to the panel at `https://YOUR_SERVER_IP:YOUR_PORT/YOUR_PATH/` and update them in the settings.
+
+> **Note:** If you skip the modification step (answer **N**), both the port and URL path will also be randomized. The installer still prints all values to the terminal — copy them before closing the session. You can also retrieve or reset them at any time by running `x-ui` in the terminal.
 
 The panel is now installed. You can manage it with these commands:
 
@@ -297,10 +303,10 @@ From now on, connect using: `ssh YOUR_USERNAME@YOUR_SERVER_IP`
 Open in your browser:
 
 ```
-http://YOUR_SERVER_IP:YOUR_PORT/YOUR_PATH/
+https://YOUR_SERVER_IP:YOUR_PORT/YOUR_PATH/
 ```
 
-> Note: use `http://`, not `https://`. Replace `YOUR_PORT` and `YOUR_PATH` with the values shown during installation. If you set custom values during the modification step (e.g., port `5580`), then the URL would be `http://YOUR_SERVER_IP:5580/panel/`.
+> The port and URL path were set during installation — see the screenshot in [Set Credentials and Panel URL](#set-credentials-and-panel-url) if you need to look them up again.
 
 Log in with the username and password you created (or the random ones generated during installation).
 
@@ -308,6 +314,8 @@ Log in with the username and password you created (or the random ones generated 
 
 1. Go to **Inbounds**
 2. Click **Add Inbound**
+
+![3X-UI — Add Inbound button](images/3x-ui-add-inbound.png)
 
 ### Fill In the Settings
 
@@ -324,42 +332,43 @@ Log in with the username and password you created (or the random ones generated 
 
 | Setting | Value |
 |---------|-------|
-| Email | Any client name (e.g., `MyClient`) |
+| Email | Any client name (e.g., `SOME_USER_NAME`) |
 | ID | Auto-generated UUID |
-| Flow | `xtls-rprx-vision` (appears after enabling Reality) |
-
-> The Flow field only appears after you enable Reality in the transport section below.
+| Flow | `xtls-rprx-vision` (appears after selecting Reality in transport) |
+| Encryption | `none` |
 
 **Transport settings:**
 
 | Setting | Value |
 |---------|-------|
 | Transmission Protocol | `TCP` |
-| AcceptProxyProtocol | OFF |
-| HTTP Masking | OFF |
-| Transparent Proxy | OFF |
-| TLS | OFF |
-| **Reality** | **ON** |
-| XTLS | OFF (this refers to the legacy XTLS protocol, not Reality) |
-| xVer | `0` |
+| Proxy Protocol | OFF |
+| Security | Select the **Reality** tab |
 | uTLS | `chrome` |
-| Domain | Leave empty (auto-fills server IP) |
 | Dest | `google.com:443` |
 | Server Names | `google.com, www.google.com` |
-| ShortIds | Auto-generated |
-| SpiderX | `/` |
+| Short IDs | Auto-generated |
+| Spider X | `/` |
 | Private Key / Public Key | Click **Get New Key** |
-| Sniffing | ON (HTTP, TLS, QUIC, FAKEDNS all checked) |
+| Sniffing | OFF |
 
-> Note: The XTLS and Reality toggles in 3X-UI are mutually exclusive. "XTLS" here means the older protocol versions. Reality is what you want.
+![3X-UI — inbound settings with Reality enabled](images/3x-ui-settings.png)
 
 ### Save and Create
 
 Click **Create**. Your VLESS + XTLS-Reality inbound is ready!
 
+> To connect multiple devices, you don't need separate inbounds — just add more clients to the same one. Click the **Edit** icon on the inbound, then add another client entry (e.g., `YET_ANOTHER_USER_NAME`) with its own UUID. Each client gets its own connection URL.
+
 ### Copy Your Connection URL
 
-Click the **Info** icon next to your client to see the connection URL. It will look like:
+Click the **Info** icon (circle with **i**) in the Menu column next to your client:
+
+![3X-UI — inbound list with client menu icons](images/3x-ui-get-client-info-1.png)
+
+A details panel will open showing all connection parameters and the connection URL at the bottom:
+
+![3X-UI — client details with connection URL](images/3x-ui-get-client-info-2.png)
 
 ```
 vless://UUID@SERVER_IP:443/?type=tcp&security=reality&fp=chrome&pbk=PUBLIC_KEY&sni=google.com&flow=xtls-rprx-vision&sid=SHORT_ID&spx=%2F#NAME
