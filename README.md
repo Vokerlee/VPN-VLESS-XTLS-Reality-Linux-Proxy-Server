@@ -95,7 +95,7 @@ You need a VPS server in a country of your choice (Europe, US, etc.). Requiremen
 
 | Use case | Provider | Notes |
 |----------|----------|-------|
-| VPN server (Europe / USA) | [HostVDS](https://hostvds.com) | Good selection of European and US locations, affordable plans, KVM virtualization, Ubuntu supported |
+| VPN server (Europe / USA) | [HostVDS](https://hostvds.com) | Good selection of European and US locations, affordable plans, KVM virtualization, Ubuntu supported; accepts **Mir**, **Mastercard**, and **crypto** |
 | Proxy server (Moscow / Russia) | [FirstVDS](https://firstvds.ru) | Russian data centers, low latency from Moscow, budget-friendly, Ubuntu supported |
 
 > Any other VPS provider will also work (Hetzner, DigitalOcean, Vultr, OVH, etc.).
