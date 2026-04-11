@@ -2,8 +2,6 @@
 
 This guide explains how to set up a self-hosted VPN using the **VLESS + XTLS-Reality** protocol — the most censorship-resistant tunneling protocol available today. Unlike WireGuard or OpenVPN, it disguises your traffic as ordinary HTTPS and cannot be reliably detected or blocked by deep packet inspection (DPI).
 
-The guide covers the full picture: from renting and configuring a VPS abroad, to connecting your personal devices or routing an entire Linux server through the VPN. It also describes a two-server setup suited for users in countries with internet restrictions (e.g., Russia), where a local proxy server forwards traffic to a VPN server abroad.
-
 **Who this guide is for:**
 - You want to bypass internet censorship or geo-restrictions
 - You want full control over your VPN — no third-party services, no shared infrastructure
@@ -14,18 +12,9 @@ The guide covers the full picture: from renting and configuring a VPS abroad, to
 - A VPS in an unrestricted country (Europe, USA, etc.) for the VPN server — see [VPS Server Requirements](#vps-server-requirements) for provider recommendations
 - Optionally, a second VPS close to your location (e.g., Moscow) if you want a local proxy entry point
 
-The guide consists of **two independent parts**:
-
-- **PART A — VPN Server:** Set up a VLESS + XTLS-Reality server using the 3X-UI web panel on a remote VPS.
-- **PART B — Connecting to the VPN:** Connect to your VPN server. Two approaches are covered:
-  - **Direct connection** using GUI client apps (Windows, macOS, iOS, Android) — simplest for personal devices
-  - **System-wide proxy on a Linux server** using Xray core — routes all traffic from a server through the VPN
-
-You can follow Part A alone if you just need a VPN server, or skip to Part B if someone else already set up the server for you.
-
 ## Table of Contents
 
-**PART A — VPN Server**
+**Chapter 1 — VPN Server Setup**
 
 1. [How It Works](#how-it-works)
 2. [VPS Server Requirements](#vps-server-requirements)
@@ -46,38 +35,29 @@ You can follow Part A alone if you just need a VPN server, or skip to Part B if 
    - [Save](#save)
    - [Get Connection Details](#get-connection-details)
 
-**PART B — Connecting to the VPN**
+**Chapter 2 — Connect from Phone/PC**
 
-6. [Option 1: Direct Connection via Client Apps](#option-1-direct-connection-via-client-apps)
-   - [Windows — Invisible Man XRay](#windows--invisible-man-xray)
-   - [macOS — FoXray](#macos--foxray)
-   - [iOS — FoXray](#ios--foxray)
-   - [Android — NekoBox](#android--nekobox)
-7. [Option 2: System-Wide Proxy on a Linux Server](#option-2-system-wide-proxy-on-a-linux-server)
-   - [Install Xray Core](#install-xray-core)
-   - [Create the Xray Config](#create-the-xray-config)
-   - [Enable and Start Xray](#enable-and-start-xray)
-   - [Configure System-Wide Proxy](#configure-system-wide-proxy)
-   - [Persistence Summary](#persistence-summary)
-8. [Expose Proxy to Remote Clients](#expose-proxy-to-remote-clients)
-   - [Change Listen Address](#change-listen-address)
-   - [Configure Firewall](#configure-firewall)
-   - [Connect from Your Home Machine](#connect-from-your-home-machine)
-9. [Troubleshooting](#troubleshooting)
-   - [Xray won't start](#xray-wont-start)
-   - [Proxy works but some sites don't load](#proxy-works-but-some-sites-dont-load)
-   - [Check your exit IP](#check-your-exit-ip)
-   - [Xray is running but connection fails](#xray-is-running-but-connection-fails)
-   - [3X-UI panel is not accessible](#3x-ui-panel-is-not-accessible)
-   - [Disable the proxy temporarily](#disable-the-proxy-temporarily)
-   - [Full uninstall script (client side)](#full-uninstall-script-client-side)
-10. [Quick Reference: Complete Client Setup Script](#quick-reference-complete-client-setup-script)
+6. [Windows — Invisible Man XRay](#windows--invisible-man-xray)
+7. [macOS — FoXray](#macos--foxray)
+8. [iOS — FoXray](#ios--foxray)
+9. [Android — NekoBox](#android--nekobox)
+
+**Chapter 3 — Use Xray from Linux**
+
+10. [Install Xray Core](#install-xray-core)
+11. [Create the Xray Config](#create-the-xray-config)
+12. [Enable and Start Xray](#enable-and-start-xray)
+13. [Configure System-Wide Proxy](#configure-system-wide-proxy)
+14. [Persistence Summary](#persistence-summary)
+15. [Expose Proxy to Remote Clients](#expose-proxy-to-remote-clients) *(optional)*
+16. [Troubleshooting](#troubleshooting)
+17. [Quick Reference: Complete Client Setup Script](#quick-reference-complete-client-setup-script)
 
 ---
 
-# PART A — VPN Server
+# Chapter 1 — VPN Server Setup
 
-Everything in this part happens on your **VPN server** — the machine that will act as the tunnel endpoint.
+Everything in this chapter happens on your **VPN server** — the machine that will act as the tunnel endpoint.
 
 ---
 
@@ -113,7 +93,7 @@ You need a VPS server in a country of your choice (Europe, US, etc.). Requiremen
 | VPN server (Europe / USA) | [HostVDS](https://hostvds.com) | Good selection of European and US locations, affordable plans, KVM virtualization, Ubuntu supported |
 | Proxy server (Moscow / Russia) | [FirstVDS](https://firstvds.ru) | Russian data centers, low latency from Moscow, budget-friendly, Ubuntu supported |
 
-> For a VPN server the location matters: choose a country where internet is not restricted. For a local proxy server (Part B, Option 2) you want a server close to your users — a Moscow-based VDS from FirstVDS works well if you and your users are in Russia.
+> Any other VPS provider will also work (Hetzner, DigitalOcean, Vultr, OVH, etc.).
 
 **Possible setups — choose what fits your situation:**
 
@@ -135,7 +115,7 @@ HostVDS server (Europe / USA)
    Internet
 ```
 
-→ Follow [Part A](#vps-server-requirements) to set up the VPN server, then [Part B → Option 1](#option-1-direct-connection-via-client-apps) to connect from your device using a GUI client app.
+→ Follow Chapter 1 to set up the VPN server, then Chapter 2 to connect from your device using a GUI client app.
 
 ---
 
@@ -156,7 +136,7 @@ HostVDS server (Europe / USA)
    Internet
 ```
 
-→ Follow [Part A](#vps-server-requirements) to set up the VPN server, then [Part B → Option 2](#option-2-system-wide-proxy-on-a-linux-server) to configure system-wide proxy on the Linux server.
+→ Follow Chapter 1 to set up the VPN server, then Chapter 3 to configure system-wide proxy on the Linux server.
 
 ---
 
@@ -185,13 +165,11 @@ HostVDS server (Europe / USA)
 - The FirstVDS proxy forwards all traffic through an encrypted **VLESS + XTLS-Reality tunnel** to the HostVDS VPN server abroad
 - From the outside, the tunnel looks like normal HTTPS traffic to google.com — DPI cannot distinguish it
 
-→ Follow [Part A](#vps-server-requirements) to set up the HostVDS server, then [Part B → Option 2](#option-2-system-wide-proxy-on-a-linux-server) to configure the FirstVDS server as the proxy, and [Expose Proxy to Remote Clients](#expose-proxy-to-remote-clients) to allow your devices to connect to it.
+→ Follow Chapter 1 to set up the HostVDS server, then Chapter 3 to configure the FirstVDS server as the proxy, and [Expose Proxy to Remote Clients](#expose-proxy-to-remote-clients) to allow your devices to connect to it.
 
 ---
 
-Any other VPS provider will also work (Hetzner, DigitalOcean, Vultr, OVH, etc.).
-
-After purchasing, you'll receive:
+After purchasing a VPS, you'll receive:
 - Server IP address
 - Root password (or SSH key)
 
@@ -392,22 +370,15 @@ Save this URL — you'll need it for client configuration. You can also click th
 
 ---
 
-# PART B — Connecting to the VPN
+# Chapter 2 — Connect from Phone/PC
 
-Everything below happens on the **client side** — the device or server that wants to use the VPN. You need the connection URL (or the individual values: server IP, UUID, public key, short ID) from Part A.
+Use a GUI app to connect directly to your VLESS + XTLS-Reality server. No separate proxy setup is needed — just import the connection URL and click connect.
 
-There are two fundamentally different approaches:
-
-- **Option 1: Direct connection** — Use a GUI app (Windows, macOS, iOS, Android) that connects directly to the VPN. This is the simplest method. The app handles everything: it creates a local proxy or TUN interface, routes your traffic through the VPN, and you're done.
-- **Option 2: System-wide proxy on a Linux server** — Install Xray core on another Ubuntu server, configure it as an HTTP proxy pointing to your VPN, and route all system traffic through it. This is useful when you want an entire server to go through the VPN (e.g., for web scraping, CI/CD, or bypassing geo-restrictions on a cloud server).
+You need the connection URL (or individual values: server IP, UUID, public key, short ID) from Chapter 1.
 
 ---
 
-## Option 1: Direct Connection via Client Apps
-
-These apps connect directly to your VLESS + XTLS-Reality server. No separate proxy setup is needed — just import the connection URL and click connect.
-
-### Windows — Invisible Man XRay
+## Windows — Invisible Man XRay
 
 **GitHub:** [https://github.com/InvisibleManVPN/InvisibleMan-XRayClient](https://github.com/InvisibleManVPN/InvisibleMan-XRayClient)
 
@@ -418,7 +389,7 @@ These apps connect directly to your VLESS + XTLS-Reality server. No separate pro
 5. Close the configuration manager and click **RUN**
 6. The status should change from "Stopped" to "Connected"
 
-### macOS — FoXray
+## macOS — FoXray
 
 **App Store:** [FoXray](https://apps.apple.com/app/foxray/id6448898396)
 
@@ -427,7 +398,7 @@ These apps connect directly to your VLESS + XTLS-Reality server. No separate pro
 3. In FoXray, click the **clipboard/paste** icon to import the URL
 4. Press **Play** and allow the VPN configuration when prompted
 
-### iOS — FoXray
+## iOS — FoXray
 
 **App Store:** [FoXray](https://apps.apple.com/app/foxray/id6448898396) (requires iOS 16+)
 
@@ -436,7 +407,7 @@ These apps connect directly to your VLESS + XTLS-Reality server. No separate pro
 3. In FoXray, tap the **QR scan** icon (top-left corner) and scan the code
 4. Tap **Play**, allow the VPN configuration, and enter your device passcode
 
-### Android — NekoBox
+## Android — NekoBox
 
 **GitHub:** [https://github.com/MatsuriDayo/NekoBoxForAndroid](https://github.com/MatsuriDayo/NekoBoxForAndroid)
 
@@ -448,17 +419,21 @@ These apps connect directly to your VLESS + XTLS-Reality server. No separate pro
 
 ---
 
-## Option 2: System-Wide Proxy on a Linux Server
+# Chapter 3 — Use Xray from Linux
 
-This approach installs Xray core on another Ubuntu server. Xray creates a local HTTP proxy (`127.0.0.1:10801`) that tunnels all traffic through your VLESS VPN server. Then you configure the OS to route everything through that proxy.
+This chapter covers installing Xray core on an Ubuntu server, creating an HTTP proxy that tunnels traffic through your VLESS VPN server, and routing all system traffic through it.
 
-### Install Xray Core
+You need the connection details (server IP, UUID, public key, short ID) from Chapter 1.
+
+---
+
+## Install Xray Core
 
 ```bash
 sudo bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 ```
 
-### Create the Xray Config
+## Create the Xray Config
 
 Replace the placeholder values below with your actual server details from the 3X-UI connection URL.
 
@@ -529,7 +504,7 @@ EOF
 | `YOUR_PUBLIC_KEY` | The Public Key generated in 3X-UI |
 | `YOUR_SHORT_ID` | The ShortId from 3X-UI |
 
-### Enable and Start Xray
+## Enable and Start Xray
 
 ```bash
 sudo systemctl daemon-reload
@@ -559,9 +534,9 @@ curl -x http://127.0.0.1:10801 https://ifconfig.me
 
 This should return your VPN server's IP, not the client server's IP.
 
-### Configure System-Wide Proxy
+## Configure System-Wide Proxy
 
-#### Proxy for All Login Shells
+### Proxy for All Login Shells
 
 Create `/etc/profile.d/proxy.sh`:
 
@@ -584,7 +559,7 @@ source /etc/profile.d/proxy.sh
 
 > Both lowercase and uppercase variants are needed because different tools read different ones — curl and wget use lowercase, some Java/Python libraries use uppercase.
 
-#### Proxy for APT (Optional)
+### Proxy for APT (Optional)
 
 ```bash
 sudo tee /etc/apt/apt.conf.d/95proxy > /dev/null << 'EOF'
@@ -593,7 +568,7 @@ Acquire::https::Proxy "http://127.0.0.1:10801";
 EOF
 ```
 
-#### Proxy for All Systemd Services (Optional)
+### Proxy for All Systemd Services (Optional)
 
 This ensures background services (Docker, cron jobs, nginx, etc.) also use the proxy:
 
@@ -608,7 +583,7 @@ EOF
 sudo systemctl daemon-reexec
 ```
 
-### Persistence Summary
+## Persistence Summary
 
 Everything above persists across reboots automatically:
 
@@ -623,7 +598,7 @@ Everything above persists across reboots automatically:
 
 ## Expose Proxy to Remote Clients
 
-By default, Xray listens on `127.0.0.1:10801` (local only). If you want other machines (e.g., your home PC) to connect through this server's proxy instead of running their own Xray instance:
+> **Optional.** By default, Xray listens on `127.0.0.1:10801` (local only). Follow this section if you want other machines (e.g., your home PC or other devices on your network) to connect through this server's proxy. This is used in Setup 3 from Chapter 1.
 
 ### Change Listen Address
 
@@ -643,7 +618,7 @@ sudo systemctl restart xray
 
 **Option A — Open to everyone (no IP restriction)**
 
-Use this if you want any machine to be able to connect to your proxy (e.g., a small trusted network, or you'll handle access control at the application level):
+Use this if you want any machine to be able to connect to your proxy:
 
 ```bash
 sudo ufw allow 10801/tcp
